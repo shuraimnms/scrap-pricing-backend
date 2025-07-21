@@ -63,7 +63,6 @@
 <body>
   <h1>🛠 Admin Panel - Update Scrap Prices</h1>
   <form id="priceForm">
-    <!-- Fields will be generated dynamically -->
     <div id="fields"></div>
     <button type="submit">💾 Save Prices</button>
     <div class="message" id="message"></div>
@@ -75,7 +74,7 @@
 
     async function fetchPrices() {
       try {
-        const res = await fetch('http://localhost:3000/api/prices');
+        const res = await fetch('https://scrap-pricing-backend.onrender.com/api/prices');
         const data = await res.json();
         for (let item in data) {
           const label = document.createElement('label');
@@ -103,7 +102,7 @@
       }
 
       try {
-        const res = await fetch('https://scrap-pricing-backend.onrender.com', {
+        const res = await fetch('https://scrap-pricing-backend.onrender.com/api/prices', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

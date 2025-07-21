@@ -8,7 +8,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'prices.json');
 
-app.use(cors());
+// ✅ CORS setup to allow your frontend domain
+app.use(cors({
+  origin: ['https://karnatakascrap.in', 'http://localhost:3000'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
 // ✅ Root route to test if server is running
