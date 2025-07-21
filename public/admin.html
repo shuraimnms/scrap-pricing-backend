@@ -1,103 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scrap Pricing Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Admin - Scrap Price Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f4f4f4;
       padding: 20px;
-      background-color: #f2f2f2;
     }
-    h2 {
+
+    h1 {
       text-align: center;
+      color: #333;
     }
-    .price-box {
-      background: #fff;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+
+    form {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
     }
+
     label {
+      display: block;
+      margin: 10px 0 5px;
       font-weight: bold;
     }
+
     input[type="number"] {
       width: 100%;
       padding: 8px;
-      margin-top: 5px;
+      box-sizing: border-box;
       margin-bottom: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
     }
+
     button {
-      background: #4CAF50;
+      width: 100%;
+      padding: 10px;
+      background: #28a745;
       color: white;
-      padding: 10px 15px;
       border: none;
+      font-size: 16px;
       border-radius: 5px;
       cursor: pointer;
-      width: 100%;
     }
+
     button:hover {
-      background: #45a049;
+      background: #218838;
     }
+
     .message {
-      margin-top: 10px;
-      color: green;
-      font-weight: bold;
       text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h2>📦 Update Scrap Prices</h2>
-
-  <div id="form-container"></div>
-
-  <div class="message" id="message"></div>
+  <h1>🛠 Admin Panel - Update Scrap Prices</h1>
+  <form id="priceForm">
+    <!-- Fields will be generated dynamically -->
+    <div id="fields"></div>
+    <button type="submit">💾 Save Prices</button>
+    <div class="message" id="message"></div>
+  </form>
 
   <script>
-    async function loadPrices() {
-      const res = await fetch("http://localhost:3000/api/prices");
-      const data = await res.json();
-      const container = document.getElementById("form-container");
+    const fieldsContainer = document.getElementById('fields');
+    const messageDiv = document.getElementById('message');
 
-      for (const [key, value] of Object.entries(data)) {
-        const box = document.createElement("div");
-        box.className = "price-box";
-        box.innerHTML = `
-          <label for="${key}">${key} Price (₹):</label>
-          <input type="number" id="${key}" value="${value}" min="0" />
-        `;
-        container.appendChild(box);
+    async function fetchPrices() {
+      try {
+        const res = await fetch('http://localhost:3000/api/prices');
+        const data = await res.json();
+        for (let item in data) {
+          const label = document.createElement('label');
+          label.textContent = item;
+
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.name = item;
+          input.value = data[item];
+
+          fieldsContainer.appendChild(label);
+          fieldsContainer.appendChild(input);
+        }
+      } catch (error) {
+        messageDiv.textContent = '❌ Failed to load prices.';
+      }
+    }
+
+    document.getElementById('priceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const prices = {};
+      for (const [key, value] of formData.entries()) {
+        prices[key] = Number(value);
       }
 
-      const updateBtn = document.createElement("button");
-      updateBtn.textContent = "Update Prices";
-      updateBtn.onclick = updatePrices;
-      container.appendChild(updateBtn);
-    }
+      try {
+        const res = await fetch('https://scrap-pricing-backend.onrender.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(prices),
+        });
 
-    async function updatePrices() {
-      const inputs = document.querySelectorAll("input");
-      const updated = {};
-      inputs.forEach(input => {
-        updated[input.id] = parseFloat(input.value);
-      });
+        const result = await res.json();
+        if (res.ok) {
+          messageDiv.textContent = '✅ Prices updated successfully!';
+          messageDiv.style.color = 'green';
+        } else {
+          messageDiv.textContent = '❌ Failed to update prices.';
+          messageDiv.style.color = 'red';
+        }
+      } catch (error) {
+        messageDiv.textContent = '❌ Error while updating.';
+        messageDiv.style.color = 'red';
+      }
+    });
 
-      const res = await fetch("http://localhost:3000/api/prices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated)
-      });
-
-      const result = await res.json();
-      document.getElementById("message").textContent = result.message || "Updated successfully!";
-    }
-
-    loadPrices();
+    fetchPrices();
   </script>
 </body>
 </html>
