@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scrap Pricing Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    h2 {
+      text-align: center;
+    }
+    .price-box {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .message {
+      margin-top: 10px;
+      color: green;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>📦 Update Scrap Prices</h2>
+
+  <div id="form-container"></div>
+
+  <div class="message" id="message"></div>
+
+  <script>
+    async function loadPrices() {
+      const res = await fetch("http://localhost:3000/api/prices");
+      const data = await res.json();
+      const container = document.getElementById("form-container");
+
+      for (const [key, value] of Object.entries(data)) {
+        const box = document.createElement("div");
+        box.className = "price-box";
+        box.innerHTML = `
+          <label for="${key}">${key} Price (₹):</label>
+          <input type="number" id="${key}" value="${value}" min="0" />
+        `;
+        container.appendChild(box);
+      }
+
+      const updateBtn = document.createElement("button");
+      updateBtn.textContent = "Update Prices";
+      updateBtn.onclick = updatePrices;
+      container.appendChild(updateBtn);
+    }
+
+    async function updatePrices() {
+      const inputs = document.querySelectorAll("input");
+      const updated = {};
+      inputs.forEach(input => {
+        updated[input.id] = parseFloat(input.value);
+      });
+
+      const res = await fetch("http://localhost:3000/api/prices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated)
+      });
+
+      const result = await res.json();
+      document.getElementById("message").textContent = result.message || "Updated successfully!";
+    }
+
+    loadPrices();
+  </script>
+</body>
+</html>
