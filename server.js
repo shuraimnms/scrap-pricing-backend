@@ -8,21 +8,21 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'prices.json');
 
-// ✅ CORS setup to allow your frontend domain
-app.use(cors({
-  origin: ['https://karnatakascrap.in', 'http://localhost:3000'],
-  methods: ['GET', 'POST'],
-  credentials: true
-}));
+// ✅ Serve frontend from 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
 
+// ✅ CORS setup for API (optional if serving same domain)
+app.use(cors());
+
+// ✅ Body parser
 app.use(bodyParser.json());
 
-// ✅ Root route to test if server is running
+// ✅ Root route (optional)
 app.get('/', (req, res) => {
-  res.send('✅ Scrap Pricing Backend is Live!');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ✅ Get Prices
+// ✅ API - Get Prices
 app.get('/api/prices', (req, res) => {
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     if (err) {
@@ -32,7 +32,7 @@ app.get('/api/prices', (req, res) => {
   });
 });
 
-// ✅ Update Prices
+// ✅ API - Update Prices
 app.post('/api/prices', (req, res) => {
   const newPrices = req.body;
   fs.writeFile(DATA_FILE, JSON.stringify(newPrices, null, 2), err => {
