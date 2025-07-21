@@ -11,7 +11,12 @@ const DATA_FILE = path.join(__dirname, 'prices.json');
 app.use(cors());
 app.use(bodyParser.json());
 
-// Get Prices
+// ✅ Root route to test if server is running
+app.get('/', (req, res) => {
+  res.send('✅ Scrap Pricing Backend is Live!');
+});
+
+// ✅ Get Prices
 app.get('/api/prices', (req, res) => {
   fs.readFile(DATA_FILE, 'utf8', (err, data) => {
     if (err) {
@@ -21,7 +26,7 @@ app.get('/api/prices', (req, res) => {
   });
 });
 
-// Update Prices
+// ✅ Update Prices
 app.post('/api/prices', (req, res) => {
   const newPrices = req.body;
   fs.writeFile(DATA_FILE, JSON.stringify(newPrices, null, 2), err => {
@@ -32,6 +37,7 @@ app.post('/api/prices', (req, res) => {
   });
 });
 
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
